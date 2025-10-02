@@ -43,14 +43,15 @@ export default function ProfileSetup() {
       }
 
       const { error } = await supabase
-        .from('profiles')
-        .update({
-          name: name.trim(),
-          age: Number(age),
-          gender,
-          favorite_genres: selected,
-        })
-        .eq('id', session.user.id);
+  .from('profiles')
+  .upsert({
+    id: session.user.id,           // ensure row exists
+    name: name.trim(),
+    age: Number(age),
+    gender,
+    favorite_genres: selected,
+  }, { onConflict: 'id' });
+
 
       if (error) {
         Alert.alert('Could not save', error.message);
