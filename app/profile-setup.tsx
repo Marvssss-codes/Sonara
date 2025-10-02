@@ -1,8 +1,9 @@
 // @ts-nocheck
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { supabase } from '../lib/supabase';
 
 const BG_TOP = '#0E0F1A';
 const BG_BOT = '#0A0B12';
@@ -21,9 +22,49 @@ export default function ProfileSetup() {
   const [age, setAge] = useState('');
   const [gender, setGender] = useState<'male'|'female'|'other'|null>(null);
   const [selected, setSelected] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
 
-  const toggle = (g: string) => setSelected(prev => prev.includes(g) ? prev.filter(x=>x!==g) : [...prev, g]);
+  const toggle = (g: string) => {
+    setSelected(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
+  };
+
   const canContinue = name.trim() && Number(age) > 0 && gender && selected.length > 0;
+
+  const onSave = async () => {
+    if (!canContinue || saving) return;
+    setSaving(true);
+    try {
+      const { data: { session }, error: sessErr } = await supabase.auth.getSession();
+      if (sessErr) throw sessErr;
+      if (!session) {
+        Alert.alert('Session expired', 'Please log in again.');
+        router.replace('/(auth)/login');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: name.trim(),
+          age: Number(age),
+          gender,
+          favorite_genres: selected,
+        })
+        .eq('id', session.user.id);
+
+      if (error) {
+        Alert.alert('Could not save', error.message);
+        return;
+      }
+
+      // Success → go to app
+      router.replace('/(tabs)');
+    } catch (e: any) {
+      Alert.alert('Error', e?.message || 'Something went wrong.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <View style={{ flex:1 }}>
@@ -40,15 +81,20 @@ export default function ProfileSetup() {
 
             <Text style={styles.label}>Display name</Text>
             <TextInput
-              value={name} onChangeText={setName}
-              placeholder="e.g., Marv" placeholderTextColor={SUB}
+              value={name}
+              onChangeText={setName}
+              placeholder="e.g., Marv"
+              placeholderTextColor={SUB}
               style={styles.input}
             />
 
             <Text style={styles.label}>Age</Text>
             <TextInput
-              value={age} onChangeText={setAge} keyboardType="numeric"
-              placeholder="e.g., 18" placeholderTextColor={SUB}
+              value={age}
+              onChangeText={setAge}
+              placeholder="e.g., 18"
+              placeholderTextColor={SUB}
+              keyboardType="numeric"
               style={styles.input}
             />
 
@@ -82,12 +128,12 @@ export default function ProfileSetup() {
 
           {/* CTA */}
           <TouchableOpacity
-            disabled={!canContinue}
-            onPress={()=>router.replace('/(tabs)')}
+            disabled={!canContinue || saving}
+            onPress={onSave}
             activeOpacity={0.9}
-            style={[styles.primaryBtn, !canContinue && { opacity:0.5 }]}
+            style={[styles.primaryBtn, (!canContinue || saving) && { opacity:0.6 }]}
           >
-            <Text style={styles.primaryText}>Save & Continue</Text>
+            {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryText}>Save & Continue</Text>}
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
