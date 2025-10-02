@@ -11,7 +11,6 @@ export default function RootLayout() {
       <Stack.Screen name="(auth)" />
       {/* Tabs app */}
       <Stack.Screen name="(tabs)" />
-      {/* Not-found keeps working */}
       <Stack.Screen name="+not-found" />
     </Stack>
   );
