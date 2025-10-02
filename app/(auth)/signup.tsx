@@ -7,6 +7,8 @@ import {
 import { Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, AntDesign, FontAwesome } from '@expo/vector-icons';
+import { supabase } from '../../lib/supabase';
+
 
 const { width } = Dimensions.get('window');
 
@@ -26,10 +28,17 @@ export default function Signup() {
   const [pw, setPw] = useState('');
   const [showPw, setShowPw] = useState(false);
 
-  const onCreate = () => {
-    // (Later) Supabase sign-up, then route based on profile completeness
-    router.replace('/profile-setup');
-  };
+  const onCreate = async () => {
+  if (!email || !pw) return alert('Enter email and password');
+  const { error } = await supabase.auth.signUp({ email, password: pw });
+  if (error) {
+    alert(error.message);
+    return;
+  }
+  // Trigger creates a blank profile row automatically
+  router.replace('/profile-setup');
+};
+
 
   return (
     <View style={{ flex:1, backgroundColor: BG_BOT }}>

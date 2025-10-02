@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { supabase } from '../../lib/supabase';
+
 
 const BG   = '#0F0F10';
 const CARD = '#17181B';
@@ -14,10 +16,14 @@ export default function Reset() {
   const router = useRouter();
   const [email, setEmail] = useState('');
 
-  const onSend = () => {
-    // (Later) supabase.auth.resetPasswordForEmail(email)
-    router.back(); // just go back for now
-  };
+ const onSend = async () => {
+  if (!email) return alert('Enter your email');
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  if (error) alert(error.message);
+  else alert('Check your email for the reset link.');
+  router.back();
+};
+
 
   return (
     <View style={s.wrap}>

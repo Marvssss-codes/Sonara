@@ -7,6 +7,8 @@ import {
 import { Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, AntDesign, FontAwesome } from '@expo/vector-icons';
+import { supabase } from '../../lib/supabase';
+
 
 const { width } = Dimensions.get('window');
 
@@ -28,7 +30,18 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false);
   const [remember, setRemember] = useState(false);
 
-  const onLogin = () => router.replace('/(tabs)');
+const onLogin = async () => {
+  if (!email || !pw) return alert('Enter email and password');
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password: pw,
+  });
+  if (error) {
+    alert(error.message);
+    return;
+  }
+  router.replace('/(tabs)');
+};
 
   return (
     <View style={{ flex:1, backgroundColor: BG_BOT }}>
