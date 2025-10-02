@@ -35,9 +35,10 @@ export default function Signup() {
     alert(error.message);
     return;
   }
-  // Trigger creates a blank profile row automatically
-  router.replace('/profile-setup');
+  // Take them to the Verify screen with their email
+  router.replace({ pathname: '/(auth)/verify', params: { email } });
 };
+
 
 
   return (

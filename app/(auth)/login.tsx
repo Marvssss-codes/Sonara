@@ -32,16 +32,21 @@ export default function Login() {
 
 const onLogin = async () => {
   if (!email || !pw) return alert('Enter email and password');
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password: pw,
-  });
+  const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
   if (error) {
+    const msg = (error.message || '').toLowerCase();
+    // Supabase typically returns messages containing 'confirm' for unverified emails
+    if (msg.includes('confirm') || msg.includes('verification')) {
+      // Route to verify screen with a resend option
+      router.replace({ pathname: '/(auth)/verify', params: { email } });
+      return;
+    }
     alert(error.message);
     return;
   }
   router.replace('/(tabs)');
 };
+
 
   return (
     <View style={{ flex:1, backgroundColor: BG_BOT }}>

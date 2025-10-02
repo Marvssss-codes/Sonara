@@ -1,73 +1,75 @@
 // @ts-nocheck
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 
+const BG_TOP = '#0E0F1A';
+const BG_BOT = '#0A0B12';
+const CARD   = 'rgba(18,19,30,0.95)';
+const TEXT   = '#EDEFF6';
+const SUB    = '#9AA0AE';
+const OUT    = '#2A2D3A';
+const ACCENT = '#8A5CF6';
 
-const BG   = '#0F0F10';
-const CARD = '#17181B';
-const TEXT = '#ECEDEE';
-const SUB  = '#A8ACB3';
-const LINE = '#2A2B30';
-const ACC  = '#8A5CF6';
-
-export default function Reset() {
+export default function ResetPassword() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
 
- const onSend = async () => {
-  if (!email) return alert('Enter your email');
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
-  if (error) alert(error.message);
-  else alert('Check your email for the reset link.');
-  router.back();
-};
-
+  const onSend = async () => {
+    if (!email) return Alert.alert('Enter your email');
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    setLoading(false);
+    if (error) Alert.alert('Error', error.message);
+    else Alert.alert('Check your email', 'We sent a password reset link.');
+  };
 
   return (
-    <View style={s.wrap}>
-      <Text style={s.title}>Reset password</Text>
-      <Text style={s.sub}>Enter your email and we’ll send a reset link.</Text>
+    <View style={{ flex:1 }}>
+      <LinearGradient colors={[BG_TOP, BG_BOT]} style={StyleSheet.absoluteFillObject as any} />
 
-      <View style={s.card}>
-        <View style={s.inputRow}>
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            placeholder="you@example.com"
-            placeholderTextColor={SUB}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={s.input}
-          />
+      <KeyboardAvoidingView style={{ flex:1 }} behavior={Platform.OS==='ios'?'padding':'height'}>
+        <View style={styles.center}>
+          <View style={styles.card}>
+            <Text style={styles.title}>Forgot Password</Text>
+            <Text style={styles.sub}>Enter your email to reset your password.</Text>
+
+            <TextInput
+              placeholder="Email address"
+              placeholderTextColor={SUB}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              style={styles.input}
+            />
+
+            <TouchableOpacity disabled={loading} onPress={onSend} style={[styles.primaryBtn, loading && {opacity:0.6}]}>
+              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryText}>Send Reset Link</Text>}
+            </TouchableOpacity>
+
+            {/* Back button */}
+            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+              <Text style={styles.backText}>← Back to Sign In</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        <TouchableOpacity style={s.primaryBtn} activeOpacity={0.85} onPress={onSend}>
-          <Text style={s.primaryText}>Send reset link</Text>
-        </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
-const s = StyleSheet.create({
-  wrap: { flex:1, backgroundColor: BG, padding: 20, paddingTop: 54 },
-  title: { color: TEXT, fontSize: 26, fontWeight:'900' },
-  sub: { color: SUB, marginTop: 6, marginBottom: 8 },
-  card: {
-    marginTop: 12, backgroundColor: CARD, borderRadius: 16,
-    borderWidth: 1, borderColor: LINE, padding: 16, gap: 12,
-  },
-  inputRow: {
-    flexDirection:'row', alignItems:'center', gap:10,
-    backgroundColor: BG, borderRadius: 12,
-    borderWidth: 1, borderColor: LINE, paddingHorizontal: 12, paddingVertical: 12,
-  },
-  input: { flex:1, color: TEXT },
-  primaryBtn: {
-    marginTop: 14, backgroundColor: ACC, paddingVertical: 14,
-    borderRadius: 14, alignItems:'center',
-  },
-  primaryText: { color:'#fff', fontWeight:'800' },
+const styles = StyleSheet.create({
+  center: { flex:1, alignItems:'center', justifyContent:'center', padding:20 },
+  card: { width:'100%', backgroundColor: CARD, borderRadius:16, borderWidth:1, borderColor: OUT, padding:20 },
+  title: { color: TEXT, fontWeight:'900', fontSize:24, marginBottom:6 },
+  sub: { color: SUB, marginBottom:16 },
+  input: { backgroundColor:'rgba(30,31,45,1)', color: TEXT, borderRadius:12, borderWidth:1, borderColor: OUT, padding:12, marginBottom:16 },
+  primaryBtn: { backgroundColor: ACCENT, paddingVertical:14, borderRadius:12, alignItems:'center' },
+  primaryText: { color:'#fff', fontWeight:'700' },
+  backBtn: { marginTop:14, alignItems:'center' },
+  backText: { color: SUB, fontWeight:'600' }
 });
