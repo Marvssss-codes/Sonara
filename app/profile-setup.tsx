@@ -1,14 +1,17 @@
 // @ts-nocheck
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 
-const BG   = '#0F0F10';
-const CARD = '#17181B';
-const TEXT = '#ECEDEE';
-const SUB  = '#A8ACB3';
-const LINE = '#2A2B30';
-const ACC  = '#8A5CF6';
+const BG_TOP = '#0E0F1A';
+const BG_BOT = '#0A0B12';
+const CARD   = 'rgba(18,19,30,0.9)';
+const TEXT   = '#EDEFF6';
+const SUB    = '#9AA0AE';
+const OUT    = '#2A2D3A';
+const PILL   = '#141626';
+const ACCENT = '#8A5CF6';
 
 const GENRES = ['Afrobeats','Hip-Hop','Pop','R&B','Gospel','Amapiano','Highlife','Alté','Reggae','Rock','Jazz','Dance/Electro'];
 
@@ -19,100 +22,103 @@ export default function ProfileSetup() {
   const [gender, setGender] = useState<'male'|'female'|'other'|null>(null);
   const [selected, setSelected] = useState<string[]>([]);
 
-  const toggle = (g: string) => {
-    setSelected(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
-  };
-
+  const toggle = (g: string) => setSelected(prev => prev.includes(g) ? prev.filter(x=>x!==g) : [...prev, g]);
   const canContinue = name.trim() && Number(age) > 0 && gender && selected.length > 0;
 
-  const onContinue = () => {
-    if (!canContinue) return;
-    // (Later) save to Supabase, then go to tabs
-    router.replace('/(tabs)');
-  };
-
   return (
-    <ScrollView style={{ flex:1, backgroundColor: BG }} contentContainerStyle={{ padding:20, paddingTop:54 }}>
-      <Text style={s.brand}>SONARA</Text>
-      <Text style={s.title}>Complete your profile</Text>
-      <Text style={s.sub}>Tell us a bit about you to personalize recommendations.</Text>
+    <View style={{ flex:1 }}>
+      <LinearGradient colors={[BG_TOP, BG_BOT]} style={StyleSheet.absoluteFillObject as any} />
+      <KeyboardAvoidingView style={{ flex:1 }} behavior={Platform.OS==='ios'?'padding':'height'}>
+        <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
+          <Text style={styles.kicker}>SONARA</Text>
+          <Text style={styles.title}>Tell us about you</Text>
+          <Text style={styles.sub}>We’ll personalize your feed based on age and taste.</Text>
 
-      <View style={s.card}>
-        {/* Name */}
-        <Text style={s.label}>Name</Text>
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          placeholder="Your display name"
-          placeholderTextColor={SUB}
-          style={s.input}
-        />
+          {/* Card: Basic info */}
+          <View style={styles.card}>
+            <Text style={styles.section}>Basic info</Text>
 
-        {/* Age */}
-        <Text style={s.label}>Age</Text>
-        <TextInput
-          value={age}
-          onChangeText={setAge}
-          placeholder="e.g. 18"
-          placeholderTextColor={SUB}
-          keyboardType="numeric"
-          style={s.input}
-        />
+            <Text style={styles.label}>Display name</Text>
+            <TextInput
+              value={name} onChangeText={setName}
+              placeholder="e.g., Marv" placeholderTextColor={SUB}
+              style={styles.input}
+            />
 
-        {/* Gender */}
-        <Text style={s.label}>Gender</Text>
-        <View style={s.pillsRow}>
-          {['male','female','other'].map(g => (
-            <TouchableOpacity key={g} onPress={() => setGender(g as any)}
-              style={[s.pill, gender===g && s.pillActive]}>
-              <Text style={[s.pillText, gender===g && s.pillTextActive]}>{g}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+            <Text style={styles.label}>Age</Text>
+            <TextInput
+              value={age} onChangeText={setAge} keyboardType="numeric"
+              placeholder="e.g., 18" placeholderTextColor={SUB}
+              style={styles.input}
+            />
 
-        {/* Genres */}
-        <Text style={s.label}>Favorite genres</Text>
-        <View style={s.genresWrap}>
-          {GENRES.map(g => {
-            const active = selected.includes(g);
-            return (
-              <TouchableOpacity key={g} onPress={() => toggle(g)} style={[s.genre, active && s.genreActive]}>
-                <Text style={[s.genreText, active && s.genreTextActive]}>{g}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+            <Text style={styles.label}>Gender</Text>
+            <View style={styles.pillsRow}>
+              {['male','female','other'].map(g => {
+                const active = gender===g;
+                return (
+                  <TouchableOpacity key={g} onPress={()=>setGender(g as any)} style={[styles.pill, active && styles.pillActive]}>
+                    <Text style={[styles.pillText, active && styles.pillTextActive]}>{g}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
 
-        <TouchableOpacity
-          style={[s.primaryBtn, !canContinue && { opacity: 0.5 }]}
-          activeOpacity={0.85}
-          onPress={onContinue}
-          disabled={!canContinue}
-        >
-          <Text style={s.primaryText}>Save & Continue</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          {/* Card: Genres */}
+          <View style={styles.card}>
+            <Text style={styles.section}>Favorite genres</Text>
+            <View style={styles.genresWrap}>
+              {GENRES.map(g => {
+                const active = selected.includes(g);
+                return (
+                  <TouchableOpacity key={g} onPress={() => toggle(g)} style={[styles.genre, active && styles.genreActive]}>
+                    <Text style={[styles.genreText, active && styles.genreTextActive]}>{g}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* CTA */}
+          <TouchableOpacity
+            disabled={!canContinue}
+            onPress={()=>router.replace('/(tabs)')}
+            activeOpacity={0.9}
+            style={[styles.primaryBtn, !canContinue && { opacity:0.5 }]}
+          >
+            <Text style={styles.primaryText}>Save & Continue</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
-const s = StyleSheet.create({
-  brand: { color: ACC, fontWeight:'800', letterSpacing: 2, marginBottom: 6 },
-  title: { color: TEXT, fontSize: 26, fontWeight:'900' },
-  sub: { color: SUB, marginTop: 4, marginBottom: 12 },
-  card: { marginTop: 6, backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: LINE, padding: 16 },
-  label: { color: TEXT, marginTop: 10, marginBottom: 6, fontWeight: '700' },
-  input: { backgroundColor: BG, color: TEXT, borderWidth: 1, borderColor: LINE, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12 },
+const styles = StyleSheet.create({
+  wrap: { flexGrow:1, padding:20, paddingTop:34 },
+  kicker: { color:'#8B90A7', letterSpacing:2, fontWeight:'800', marginBottom:6 },
+  title: { color: TEXT, fontWeight:'900', fontSize:26 },
+  sub: { color: SUB, marginTop:4, marginBottom:10 },
+
+  card: { backgroundColor: CARD, borderRadius:16, borderWidth:1, borderColor: OUT, padding:16, marginTop:12 },
+  section: { color: TEXT, fontWeight:'800', marginBottom:8, opacity:0.95 },
+
+  label: { color: TEXT, marginTop:10, marginBottom:6, fontWeight:'700', opacity:0.9 },
+  input: { backgroundColor: PILL, color: TEXT, borderWidth:1, borderColor: OUT, borderRadius:12, paddingHorizontal:12, paddingVertical:12 },
+
   pillsRow: { flexDirection:'row', gap:10 },
-  pill: { paddingVertical:10, paddingHorizontal:14, borderRadius:20, borderWidth:1, borderColor: LINE, backgroundColor: BG },
-  pillActive: { backgroundColor: ACC, borderColor: ACC },
+  pill: { paddingVertical:10, paddingHorizontal:14, borderRadius:20, borderWidth:1, borderColor: OUT, backgroundColor: PILL },
+  pillActive: { backgroundColor: ACCENT, borderColor: ACCENT },
   pillText: { color: TEXT, textTransform:'capitalize', fontWeight:'600' },
   pillTextActive: { color:'#fff' },
+
   genresWrap: { flexDirection:'row', flexWrap:'wrap', gap:10 },
-  genre: { paddingVertical:8, paddingHorizontal:12, borderRadius:18, borderWidth:1, borderColor: LINE, backgroundColor: BG },
-  genreActive: { backgroundColor: '#222', borderColor: ACC },
+  genre: { paddingVertical:8, paddingHorizontal:12, borderRadius:18, borderWidth:1, borderColor: OUT, backgroundColor: PILL },
+  genreActive: { backgroundColor:'#222', borderColor: ACCENT },
   genreText: { color: TEXT, fontWeight:'600' },
-  genreTextActive: { color: '#fff' },
-  primaryBtn: { marginTop: 16, backgroundColor: ACC, paddingVertical: 14, borderRadius: 14, alignItems:'center' },
+  genreTextActive: { color:'#fff' },
+
+  primaryBtn: { marginTop:16, backgroundColor: ACCENT, paddingVertical:14, borderRadius:14, alignItems:'center' },
   primaryText: { color:'#fff', fontWeight:'800' },
 });

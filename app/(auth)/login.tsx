@@ -1,132 +1,173 @@
 // @ts-nocheck
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
+import {
+  View, Text, TextInput, StyleSheet, TouchableOpacity,
+  Image, Pressable, Dimensions, KeyboardAvoidingView, Platform, ScrollView
+} from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import { Ionicons, AntDesign } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons, AntDesign, FontAwesome } from '@expo/vector-icons';
 
-const BG   = '#0F0F10';
-const CARD = '#17181B';
-const TEXT = '#ECEDEE';
-const SUB  = '#A8ACB3';
-const LINE = '#2A2B30';
-const ACC  = '#8A5CF6';
+const { width } = Dimensions.get('window');
+
+const BG_TOP = '#0E0F1A';
+const BG_BOT = '#0A0B12';
+const CARD   = 'rgba(18,19,30,0.85)';
+const TEXT   = '#EDEFF6';
+const SUB    = '#9AA0AE';
+const OUT    = '#2A2D3A';
+const PILL   = '#141626';
+const ACCENT = '#8A5CF6';
+const LINK   = '#9AF05A';
+const PINK   = '#FF4D91';
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
   const [showPw, setShowPw] = useState(false);
-  const [remember, setRemember] = useState(true);
+  const [remember, setRemember] = useState(false);
 
-  const onContinue = () => {
-    // (Later) Supabase login; for now simulate success
-    router.replace('/(tabs)');
-  };
+  const onLogin = () => router.replace('/(tabs)');
 
   return (
-    <View style={s.wrap}>
-      <View style={{ marginBottom: 18 }}>
-        <Text style={s.brand}>SONARA</Text>
-        <Text style={s.title}>Welcome back</Text>
-        <Text style={s.sub}>Log in to continue your age-based music journey.</Text>
+    <View style={{ flex:1, backgroundColor: BG_BOT }}>
+      <LinearGradient colors={[BG_TOP, BG_BOT]} style={StyleSheet.absoluteFillObject as any} />
+
+      {/* Hero image (no circle) */}
+      <Image
+        // royalty-free headphone portrait
+        // source={{ uri: 'https://images.unsplash.com/photo-1523292562811-8fa7962a78c8?q=80&w=1200&auto=format&fit=crop' }}
+        style={styles.hero}
+        resizeMode="cover"
+      />
+
+      {/* Subtle grid */}
+      <View pointerEvents="none" style={styles.gridWrap}>
+        {Array.from({ length: 10 }).map((_, i) => (
+          <View key={`v${i}`} style={[styles.gridLineV, { left: (i * width) / 10 }]} />
+        ))}
+        {Array.from({ length: 18 }).map((_, i) => (
+          <View key={`h${i}`} style={[styles.gridLineH, { top: i * 40 }]} />
+        ))}
       </View>
 
-      <View style={s.card}>
-        {/* email */}
-        <View style={s.inputRow}>
-          <Ionicons name="mail-outline" size={20} color={SUB} />
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            placeholder="you@example.com"
-            placeholderTextColor={SUB}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={s.input}
-          />
-        </View>
+      {/* Keyboard-safe centered content */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex:1 }}
+      >
+        <ScrollView
+          contentContainerStyle={styles.centerWrap}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Heading */}
+          <View style={{ width: '100%' }}>
+            <Text style={styles.kicker}>SONARA</Text>
+            <Text style={styles.title}>
+              Login To{' '}
+              <Text style={{ color: '#B2B6C6' }}>Your </Text>
+              <Text style={{ color: TEXT }}>Account</Text>
+            </Text>
+          </View>
 
-        {/* password */}
-        <View style={s.inputRow}>
-          <Ionicons name="lock-closed-outline" size={20} color={SUB} />
-          <TextInput
-            value={pw}
-            onChangeText={setPw}
-            placeholder="••••••••"
-            placeholderTextColor={SUB}
-            secureTextEntry={!showPw}
-            style={s.input}
-          />
-          <Pressable onPress={() => setShowPw(v => !v)}>
-            <Ionicons name={showPw ? 'eye-off-outline' : 'eye-outline'} size={20} color={SUB} />
-          </Pressable>
-        </View>
-
-        {/* remember + forgot */}
-        <View style={s.rowBetween}>
-          <Pressable onPress={() => setRemember(v => !v)} style={s.remember}>
-            <View style={[s.checkbox, remember && { backgroundColor: ACC, borderColor: ACC }]}>
-              {remember && <Ionicons name="checkmark" size={14} color="#fff" />}
+          {/* Form card */}
+          <View style={styles.card}>
+            <View style={styles.inputRow}>
+              <Ionicons name="mail-outline" size={18} color={SUB} />
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Email"
+                placeholderTextColor={SUB}
+                style={styles.input}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                returnKeyType="next"
+              />
             </View>
-            <Text style={s.rememberText}>Remember me</Text>
-          </Pressable>
 
-          <Link href="/(auth)/reset"><Text style={[s.link, { color: ACC }]}>Forgot password?</Text></Link>
-        </View>
+            <View style={styles.inputRow}>
+              <Ionicons name="lock-closed-outline" size={18} color={SUB} />
+              <TextInput
+                value={pw}
+                onChangeText={setPw}
+                placeholder="Password"
+                placeholderTextColor={SUB}
+                style={styles.input}
+                secureTextEntry={!showPw}
+                returnKeyType="go"
+              />
+              <Pressable onPress={() => setShowPw(v => !v)}>
+                <Ionicons name={showPw ? 'eye-off-outline' : 'eye-outline'} size={18} color={SUB} />
+              </Pressable>
+            </View>
 
-        {/* primary CTA */}
-        <TouchableOpacity style={s.primaryBtn} activeOpacity={0.85} onPress={onContinue}>
-          <Text style={s.primaryText}>Continue</Text>
-        </TouchableOpacity>
+            <View style={styles.rowBetween}>
+              <Link href="/(auth)/reset"><Text style={{ color: PINK, fontWeight:'700' }}>Forgot Password?</Text></Link>
+              <Pressable style={styles.remember} onPress={() => setRemember(v => !v)}>
+                <View style={[styles.dot, remember && { backgroundColor: ACCENT }]} />
+                <Text style={{ color: SUB }}>Remember me</Text>
+              </Pressable>
+            </View>
 
-        {/* divider */}
-        <View style={s.dividerWrap}>
-          <View style={s.divider} />
-          <Text style={{ color: SUB, fontSize: 12 }}>or</Text>
-          <View style={s.divider} />
-        </View>
+            <TouchableOpacity style={styles.primaryBtn} activeOpacity={0.9} onPress={onLogin}>
+              <Text style={styles.primaryText}>Login</Text>
+            </TouchableOpacity>
 
-        {/* social buttons (UI only) */}
-        <View style={{ gap: 10 }}>
-          <TouchableOpacity style={s.socialBtn} activeOpacity={0.85} onPress={() => {}}>
-            <AntDesign name="google" size={18} color="#fff" />
-            <Text style={s.socialText}>Continue with Google</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[s.socialBtn, { backgroundColor: '#1DB954' }]} activeOpacity={0.85} onPress={() => {}}>
-            <AntDesign name="spotify" size={18} color="#fff" />
-            <Text style={s.socialText}>Continue with Spotify</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+            <View style={styles.orRow}>
+              <View style={styles.hr} /><Text style={{ color: SUB }}>OR</Text><View style={styles.hr} />
+            </View>
 
-      {/* footer */}
-      <View style={{ alignItems:'center', marginTop: 14 }}>
-        <Text style={s.sub}>
-          Don’t have an account?{' '}
-          <Link href="/(auth)/signup"><Text style={[s.link, { color: ACC }]}>Create one</Text></Link>
-        </Text>
-      </View>
+            <View style={styles.socialRow}>
+              <TouchableOpacity style={styles.socialCircle} activeOpacity={0.85}><AntDesign name="facebook-square" size={22} color="#3b5998" /></TouchableOpacity>
+              <TouchableOpacity style={styles.socialCircle} activeOpacity={0.85}><AntDesign name="google" size={22} color="#DB4437" /></TouchableOpacity>
+              <TouchableOpacity style={styles.socialCircle} activeOpacity={0.85}><FontAwesome name="apple" size={24} color="#fff" /></TouchableOpacity>
+            </View>
+          </View>
+
+          <Text style={styles.bottomLine}>
+            Don’t have an account?{' '}
+            <Link href="/(auth)/signup"><Text style={{ color: LINK, fontWeight:'700' }}>Sign up</Text></Link>
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
-const s = StyleSheet.create({
-  wrap: { flex:1, backgroundColor: BG, padding: 20, paddingTop: 54 },
-  brand: { color: ACC, fontWeight:'800', letterSpacing: 2, marginBottom: 6 },
-  title: { color: TEXT, fontSize: 26, fontWeight:'900' },
-  sub: { color: SUB, marginTop: 4 },
-  card: { marginTop: 18, backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: LINE, padding: 16, gap: 12 },
-  inputRow: { flexDirection:'row', alignItems:'center', gap:10, backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: LINE, paddingHorizontal: 12, paddingVertical: 12 },
+const styles = StyleSheet.create({
+  centerWrap: {
+    flexGrow: 1,
+    justifyContent: 'center',   // centers vertically
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 32,
+  },
+  kicker: { color: '#8B90A7', letterSpacing: 2, fontWeight:'800', marginBottom: 6 },
+  title: { color: TEXT, fontWeight: '900', fontSize: 28, marginBottom: 16 },
+
+  card: { backgroundColor: CARD, borderRadius: 20, borderWidth: 1, borderColor: OUT, padding: 16 },
+  inputRow: { flexDirection:'row', alignItems:'center', gap:10, backgroundColor: PILL, borderWidth:1, borderColor: OUT, borderRadius: 28, paddingHorizontal:14, paddingVertical:12, marginBottom:12 },
   input: { flex:1, color: TEXT },
-  rowBetween: { flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginTop: 6 },
+
+  rowBetween: { flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginBottom: 12 },
   remember: { flexDirection:'row', alignItems:'center', gap:8 },
-  checkbox: { width:18, height:18, borderRadius:4, borderWidth:1, borderColor: LINE, alignItems:'center', justifyContent:'center' },
-  rememberText: { color: SUB },
-  primaryBtn: { marginTop: 14, backgroundColor: ACC, paddingVertical: 14, borderRadius: 14, alignItems:'center', shadowColor: ACC, shadowOpacity: 0.35, shadowRadius: 10, elevation: 4 },
+  dot: { width:16, height:16, borderRadius:8, borderWidth:1, borderColor: OUT },
+
+  primaryBtn: { backgroundColor: ACCENT, paddingVertical: 14, borderRadius: 28, alignItems:'center', marginTop: 4, marginBottom: 14 },
   primaryText: { color:'#fff', fontWeight:'800' },
-  link: { fontWeight:'700' },
-  dividerWrap: { flexDirection:'row', alignItems:'center', gap:10, marginTop: 6 },
-  divider: { flex:1, height:1, backgroundColor: LINE },
-  socialBtn: { flexDirection:'row', gap:10, alignItems:'center', justifyContent:'center', backgroundColor:'#222', paddingVertical:12, borderRadius:12, borderWidth:1, borderColor:LINE },
-  socialText: { color:'#fff', fontWeight:'700' },
+
+  orRow: { flexDirection:'row', alignItems:'center', gap:10, marginBottom: 14 },
+  hr: { flex:1, height:1, backgroundColor: OUT },
+
+  socialRow: { flexDirection:'row', justifyContent:'space-between', paddingHorizontal: 32, marginBottom: 4 },
+  socialCircle: { width:56, height:56, borderRadius:28, alignItems:'center', justifyContent:'center', backgroundColor:'#111423', borderWidth:1, borderColor: OUT },
+
+  bottomLine: { color: SUB, textAlign: 'center', marginTop: 10 },
+
+  hero: { position:'absolute', right: -30, top: 80, width: 300, height: 220, opacity: 0.7, borderTopLeftRadius: 24, borderBottomLeftRadius: 24 },
+  gridWrap: { ...StyleSheet.absoluteFillObject, opacity: 0.12 },
+  gridLineV: { position:'absolute', top:0, bottom:0, width:1, backgroundColor: '#2A2D3A' },
+  gridLineH: { position:'absolute', left:0, right:0, height:1, backgroundColor: '#2A2D3A' },
 });
