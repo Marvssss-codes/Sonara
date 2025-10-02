@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, AntDesign } from '@expo/vector-icons';
 
 const BG   = '#0F0F10';
 const CARD = '#17181B';
@@ -18,8 +18,8 @@ export default function Signup() {
   const [showPw, setShowPw] = useState(false);
 
   const onCreate = () => {
-    // (Later) replace with Supabase sign-up
-    router.replace('/profile-setup'); // we’ll create this screen next step
+    // (Later) Supabase sign-up; now go to Profile Setup
+    router.replace('/profile-setup');
   };
 
   return (
@@ -31,7 +31,6 @@ export default function Signup() {
       </View>
 
       <View style={s.card}>
-        {/* email */}
         <View style={s.inputRow}>
           <Ionicons name="mail-outline" size={20} color={SUB} />
           <TextInput
@@ -45,7 +44,6 @@ export default function Signup() {
           />
         </View>
 
-        {/* password */}
         <View style={s.inputRow}>
           <Ionicons name="lock-closed-outline" size={20} color={SUB} />
           <TextInput
@@ -64,6 +62,23 @@ export default function Signup() {
         <TouchableOpacity style={s.primaryBtn} activeOpacity={0.85} onPress={onCreate}>
           <Text style={s.primaryText}>Create account</Text>
         </TouchableOpacity>
+
+        <View style={s.dividerWrap}>
+          <View style={s.divider} />
+          <Text style={{ color: SUB, fontSize: 12 }}>or</Text>
+          <View style={s.divider} />
+        </View>
+
+        <View style={{ gap: 10 }}>
+          <TouchableOpacity style={s.socialBtn} activeOpacity={0.85} onPress={() => {}}>
+            <AntDesign name="google" size={18} color="#fff" />
+            <Text style={s.socialText}>Sign up with Google</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[s.socialBtn, { backgroundColor: '#1DB954' }]} activeOpacity={0.85} onPress={() => {}}>
+            <AntDesign name="spotify" size={18} color="#fff" />
+            <Text style={s.socialText}>Sign up with Spotify</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={{ alignItems:'center', marginTop: 14 }}>
@@ -81,21 +96,14 @@ const s = StyleSheet.create({
   brand: { color: ACC, fontWeight:'800', letterSpacing: 2, marginBottom: 6 },
   title: { color: TEXT, fontSize: 26, fontWeight:'900' },
   sub: { color: SUB, marginTop: 4 },
-  card: {
-    marginTop: 18, backgroundColor: CARD, borderRadius: 16,
-    borderWidth: 1, borderColor: LINE, padding: 16, gap: 12,
-  },
-  inputRow: {
-    flexDirection:'row', alignItems:'center', gap:10,
-    backgroundColor: BG, borderRadius: 12,
-    borderWidth: 1, borderColor: LINE, paddingHorizontal: 12, paddingVertical: 12,
-  },
+  card: { marginTop: 18, backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: LINE, padding: 16, gap: 12 },
+  inputRow: { flexDirection:'row', alignItems:'center', gap:10, backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: LINE, paddingHorizontal: 12, paddingVertical: 12 },
   input: { flex:1, color: TEXT },
-  primaryBtn: {
-    marginTop: 14, backgroundColor: ACC, paddingVertical: 14,
-    borderRadius: 14, alignItems:'center',
-    shadowColor: ACC, shadowOpacity: 0.35, shadowRadius: 10, elevation: 4,
-  },
+  primaryBtn: { marginTop: 14, backgroundColor: ACC, paddingVertical: 14, borderRadius: 14, alignItems:'center', shadowColor: ACC, shadowOpacity: 0.35, shadowRadius: 10, elevation: 4 },
   primaryText: { color:'#fff', fontWeight:'800' },
   link: { fontWeight:'700' },
+  dividerWrap: { flexDirection:'row', alignItems:'center', gap:10, marginTop: 6 },
+  divider: { flex:1, height:1, backgroundColor: LINE },
+  socialBtn: { flexDirection:'row', gap:10, alignItems:'center', justifyContent:'center', backgroundColor:'#222', paddingVertical:12, borderRadius:12, borderWidth:1, borderColor:LINE },
+  socialText: { color:'#fff', fontWeight:'700' },
 });

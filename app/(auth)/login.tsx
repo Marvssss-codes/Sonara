@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, AntDesign } from '@expo/vector-icons';
 
 const BG   = '#0F0F10';
 const CARD = '#17181B';
@@ -19,20 +19,18 @@ export default function Login() {
   const [remember, setRemember] = useState(true);
 
   const onContinue = () => {
-    // (Later) replace with Supabase login
-    router.replace('/(tabs)'); // go to app after “login”
+    // (Later) Supabase login; for now simulate success
+    router.replace('/(tabs)');
   };
 
   return (
     <View style={s.wrap}>
-      {/* heading */}
       <View style={{ marginBottom: 18 }}>
         <Text style={s.brand}>SONARA</Text>
         <Text style={s.title}>Welcome back</Text>
         <Text style={s.sub}>Log in to continue your age-based music journey.</Text>
       </View>
 
-      {/* form */}
       <View style={s.card}>
         {/* email */}
         <View style={s.inputRow}>
@@ -73,15 +71,32 @@ export default function Login() {
             <Text style={s.rememberText}>Remember me</Text>
           </Pressable>
 
-          <Link href="/(auth)/reset">
-            <Text style={[s.link, { color: ACC }]}>Forgot password?</Text>
-          </Link>
+          <Link href="/(auth)/reset"><Text style={[s.link, { color: ACC }]}>Forgot password?</Text></Link>
         </View>
 
-        {/* CTA */}
+        {/* primary CTA */}
         <TouchableOpacity style={s.primaryBtn} activeOpacity={0.85} onPress={onContinue}>
           <Text style={s.primaryText}>Continue</Text>
         </TouchableOpacity>
+
+        {/* divider */}
+        <View style={s.dividerWrap}>
+          <View style={s.divider} />
+          <Text style={{ color: SUB, fontSize: 12 }}>or</Text>
+          <View style={s.divider} />
+        </View>
+
+        {/* social buttons (UI only) */}
+        <View style={{ gap: 10 }}>
+          <TouchableOpacity style={s.socialBtn} activeOpacity={0.85} onPress={() => {}}>
+            <AntDesign name="google" size={18} color="#fff" />
+            <Text style={s.socialText}>Continue with Google</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[s.socialBtn, { backgroundColor: '#1DB954' }]} activeOpacity={0.85} onPress={() => {}}>
+            <AntDesign name="spotify" size={18} color="#fff" />
+            <Text style={s.socialText}>Continue with Spotify</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* footer */}
@@ -100,25 +115,18 @@ const s = StyleSheet.create({
   brand: { color: ACC, fontWeight:'800', letterSpacing: 2, marginBottom: 6 },
   title: { color: TEXT, fontSize: 26, fontWeight:'900' },
   sub: { color: SUB, marginTop: 4 },
-  card: {
-    marginTop: 18, backgroundColor: CARD, borderRadius: 16,
-    borderWidth: 1, borderColor: LINE, padding: 16, gap: 12,
-  },
-  inputRow: {
-    flexDirection:'row', alignItems:'center', gap:10,
-    backgroundColor: BG, borderRadius: 12,
-    borderWidth: 1, borderColor: LINE, paddingHorizontal: 12, paddingVertical: 12,
-  },
+  card: { marginTop: 18, backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: LINE, padding: 16, gap: 12 },
+  inputRow: { flexDirection:'row', alignItems:'center', gap:10, backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: LINE, paddingHorizontal: 12, paddingVertical: 12 },
   input: { flex:1, color: TEXT },
   rowBetween: { flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginTop: 6 },
   remember: { flexDirection:'row', alignItems:'center', gap:8 },
   checkbox: { width:18, height:18, borderRadius:4, borderWidth:1, borderColor: LINE, alignItems:'center', justifyContent:'center' },
   rememberText: { color: SUB },
-  primaryBtn: {
-    marginTop: 14, backgroundColor: ACC, paddingVertical: 14,
-    borderRadius: 14, alignItems:'center',
-    shadowColor: ACC, shadowOpacity: 0.35, shadowRadius: 10, elevation: 4,
-  },
+  primaryBtn: { marginTop: 14, backgroundColor: ACC, paddingVertical: 14, borderRadius: 14, alignItems:'center', shadowColor: ACC, shadowOpacity: 0.35, shadowRadius: 10, elevation: 4 },
   primaryText: { color:'#fff', fontWeight:'800' },
   link: { fontWeight:'700' },
+  dividerWrap: { flexDirection:'row', alignItems:'center', gap:10, marginTop: 6 },
+  divider: { flex:1, height:1, backgroundColor: LINE },
+  socialBtn: { flexDirection:'row', gap:10, alignItems:'center', justifyContent:'center', backgroundColor:'#222', paddingVertical:12, borderRadius:12, borderWidth:1, borderColor:LINE },
+  socialText: { color:'#fff', fontWeight:'700' },
 });
