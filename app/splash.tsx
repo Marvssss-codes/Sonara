@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { supabase } from '../lib/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -38,8 +39,41 @@ export default function Splash() {
       ])
     ).start();
 
-    // navigate after a moment (replace with auth check later)
-    const t = setTimeout(() => router.replace('/onboarding'), 1600);
+    // after a short moment, decide where to go
+    const t = setTimeout(async () => {
+      // 1) get current session
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        // not logged in → onboarding
+        router.replace('/onboarding');
+        return;
+      }
+
+      // 2) fetch profile for this user
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('name, age, gender, favorite_genres')
+        .eq('id', session.user.id)
+        .single();
+
+      // if profile fetch fails, just send them to complete it
+      if (error) {
+        router.replace('/profile-setup');
+        return;
+      }
+
+      // 3) check completeness
+      const complete =
+        profile?.name &&
+        Number(profile?.age) > 0 &&
+        profile?.gender &&
+        Array.isArray(profile?.favorite_genres) &&
+        profile.favorite_genres.length > 0;
+
+      router.replace(complete ? '/(tabs)' : '/profile-setup');
+    }, 1600);
+
     return () => clearTimeout(t);
   }, []);
 
