@@ -1,4 +1,79 @@
 // @ts-nocheck
+import React, { useEffect, useState } from 'react';
+import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import * as AuthSession from 'expo-auth-session';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Link, useRouter } from 'expo-router';
+
+const clientId = process.env.EXPO_PUBLIC_SPOTIFY_CLIENT_ID || 'a57d5f7c1a8647ecbb4f8385bce3967c';
+const redirectUri = AuthSession.makeRedirectUri({ native: 'sonara://redirect', useProxy: false });
+const scopes = [
+  'user-read-email',
+  'user-read-private',
+  'user-read-playback-state',
+  'user-modify-playback-state',
+  'user-read-currently-playing',
+  'playlist-read-private',
+  'user-library-read',
+  'user-library-modify',
+  'streaming',
+];
+
+export default function LoginScreen() {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+
+  async function login() {
+    try {
+      setBusy(true);
+      const discovery = {
+        authorizationEndpoint: 'https://accounts.spotify.com/authorize',
+        tokenEndpoint: 'https://accounts.spotify.com/api/token',
+      };
+
+      const res = await AuthSession.startAsync({
+        authUrl:
+          `https://accounts.spotify.com/authorize` +
+          `?response_type=token` +
+          `&client_id=${clientId}` +
+          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+          `&scope=${encodeURIComponent(scopes.join(' '))}`,
+      });
+
+      if (res.type === 'success' && res.params?.access_token) {
+        await AsyncStorage.setItem('spotify:access_token', res.params.access_token);
+        await AsyncStorage.setItem('spotify:expires_in', String(Date.now() + Number(res.params.expires_in || 3600) * 1000));
+        router.replace('/(tabs)');
+      } else {
+        Alert.alert('Login cancelled');
+      }
+    } catch (e) {
+      Alert.alert('Login failed', String(e?.message || e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Connect Spotify</Text>
+      <Pressable disabled={busy} onPress={login} style={styles.btn}>
+        <Text style={styles.btnText}>{busy ? 'Connecting…' : 'Login with Spotify'}</Text>
+      </Pressable>
+      <Link href="/(tabs)"><Text style={styles.skip}>Skip (demo)</Text></Link>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#121212', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  title: { color: '#fff', fontSize: 22, fontWeight: '700', marginBottom: 16 },
+  btn: { backgroundColor: '#1DB954', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 8 },
+  btnText: { color: '#000', fontWeight: '700' },
+  skip: { color: '#bbb', marginTop: 16 },
+});
+
+// @ts-nocheck
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
