@@ -32,20 +32,37 @@ export default function Login() {
 
 const onLogin = async () => {
   if (!email || !pw) return alert('Enter email and password');
-  const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
-  if (error) {
-    const msg = (error.message || '').toLowerCase();
-    // Supabase typically returns messages containing 'confirm' for unverified emails
-    if (msg.includes('confirm') || msg.includes('verification')) {
-      // Route to verify screen with a resend option
-      router.replace({ pathname: '/(auth)/verify', params: { email } });
+
+  try {
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
+    if (error) {
+      const msg = (error.message || '').toLowerCase();
+
+      // If Supabase hints about confirmation
+      if (msg.includes('confirm') || msg.includes('verification')) {
+        router.replace({ pathname: '/(auth)/verify', params: { email } });
+        return;
+      }
+
+      // Fallback for generic "Invalid login credentials"
+      // Offer to resend verification just in case the account is unconfirmed
+      if (msg.includes('invalid login credentials')) {
+        // optional: auto-route to verify screen where they can resend
+        router.replace({ pathname: '/(auth)/verify', params: { email } });
+        return;
+      }
+
+      alert(error.message);
       return;
     }
-    alert(error.message);
-    return;
+
+    router.replace('/(tabs)');
+  } catch (e: any) {
+    console.log('LOGIN EXCEPTION:', e);
+    alert(e?.message || 'Network error');
   }
-  router.replace('/(tabs)');
 };
+
 
 
   return (
